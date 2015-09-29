@@ -7,13 +7,15 @@
             [om-bootstrap.grid :as g]
             [om-bootstrap.random :as r]))
 
-;TODO: change atomic value types from strings to string vectors, and consing new values to the vec
+;TODO: change atomic value types from strings to string vectors, and cons new values to the vec
 ;TODO: implement 'undo' button to rewind app-state to previous state
 
 (defn bind-input [input-atom]
+  ; put the keydown event in the input atom
   #(reset! input-atom (-> %1 .-target .-value)))
 
 (defn some-component []
+  ; allocate a new atom for the keyboard-input namespace to refer to
   (let [value-atom (atom nil)]
     [:input {:type "text" :on-change (bind-input value-atom)}]))
 
@@ -51,10 +53,22 @@
 (defn null? [lat]
   ; tweak clojure to be more like scheme
   ; indifferent to the difference between nil, nothing, and the empty string
-  (or (empty? lat) (= "" (first lat)) (and (= (first lat) nil) (= (count lat) 1))))
+  ; defined only on lists
+  (if (list? lat)
+    (or (empty? lat) (= "" (first lat)) (and (= (first lat) nil) (= (count lat) 1)))
+    (js/Error. "proc (null? [coll]) called on not-coll: " lat)))
 
+; reverting to a previous state can be done by evaluating the cadr of the register
+; not currently implemented
 (defn add [x y]
   (+ x y))
+(defn subtract [x y]
+  (- x y))
+(defn divide [x y]
+  (/ x y))
+(defn multiply [x y]
+  (* x y))
+
  (defn reval! [arg]
    ; Destructively update the value of the result register
    (let [current-op (show 'op)
@@ -150,7 +164,7 @@
     (do
       (sab/html [:div
 
-                 [:h1
+                 [:h1 ; the display (r/well is bootstrap syntax for a little inner-beveled, shaded box)
                  (r/well {}  (str (get-in @app-state [:values (get-in @app-state [:current-target])])))
                   ]
                  [:button {:href    "#"
@@ -218,15 +232,13 @@
 
                             }
                    "="] " "
-                  [:button {:href    "#"
-                            :onClick #(do ;(concatToRegister app-state target-register \))
-                                       (swap! app-state update-in [:values :target-register] (fn [x] (js/parseInt x))))}
-                   ")"] " "
+
                   ]
 
 
 
                  (table {:striped? true :bordered? true :condensed? false :hover? true}
+                        ; birds-eye view of the app-state
                         (d/thead
                           (d/tr {:class "col-md-*"}
                                 (d/th {:width 30} "#")
@@ -259,6 +271,7 @@
                             (d/td (d/code {} (show 'tape))))))
                  [:div [:p ""]]
                  (table {:striped? true :bordered? true :condensed? false :hover? true}
+                        ; current key events
                         (d/thead
                           (d/tr {:class "col-md-*"}
                                 (d/th {:width 30} "I/O Monad: ")
