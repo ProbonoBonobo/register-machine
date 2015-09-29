@@ -90,7 +90,6 @@
              (swap! app-state assoc-in [:values :x] "")
              (swap! app-state assoc-in [:values :y] "")
              (swap! app-state assoc-in [:values :op] "")
-
              )
      (= current-op "subtract")
            (do
@@ -115,16 +114,10 @@
              (swap! app-state assoc-in [:values :x] "")
              (swap! app-state assoc-in [:values :y] "")
              (swap! app-state assoc-in [:values :op] "")
-             ))
+             )
+     )
    (swap! app-state assoc-in [:current-target] :result)
-
-     ))
-
-
-
-(defn can-evaluate? [] (and (not (= "" (get-in @app-state [:values :x])))
-                            (not (= "" (get-in @app-state [:values :op])))
-                            (not (= "" (get-in @app-state [:values :y])))))
+   ))
 
 (defn concatToRegister [atmap loc value]
   (let [pending-op (get-in @app-state [:values :op])]
@@ -133,40 +126,29 @@
       (swap! app-state assoc-in [:current-target] :y))
     (if (not (= "NaN" (str value)))
       (swap! atmap update-in [:values (get-in @app-state [:current-target])] str value)))))
-    ;(if (can-evaluate?) (do (swap! app-state assoc-in [:values :result] (get-in (reval! 'equals) [:values :result]))))))
-                            ;(swap! app-state assoc-in [:values :op] pending-op)
-                            ;(swap! app-state assoc-in [:current-target] current-target)))))
 
 (defn register-empty? [target]
   (= (get-in @app-state [:values target]) ""))
 
-
 (defn op-button-handler [op]
-  (cond (and (register-empty? :y) (register-empty? :op)) (do
-                                                           (swap! app-state assoc-in [:values :op] op))
-                                                           ;(swap! app-state assoc-in [:current-target] :y))
+  (cond (and (register-empty? :y) (register-empty? :op)) (swap! app-state assoc-in [:values :op] op)
         (and (not (register-empty? :y)) (not (register-empty? :op))) (do
                                                                       (reval! 'equals)
                                                                       (swap! app-state assoc-in [:values :x] (show 'result))
                                                                       (swap! app-state assoc-in [:values :op] op)
                                                                       ))
-                                                                      ;))
-  ;(swap! keyboard-input assoc-in [:key-id] "")
   (swap! app-state assoc-in [:shift-in] false))
-
-
-
 
 (defn a-simple-stateful-object [app-state input]
   (let [target-register (get-in @app-state [:current-target])]
-
-
     (do
       (sab/html [:div
 
-                 [:h1 ; the display (r/well is bootstrap syntax for a little inner-beveled, shaded box)
-                 (r/well {}  (str (get-in @app-state [:values (get-in @app-state [:current-target])])))
+                 [:h1 ; the display
+                 ;          (r/well is bootstrap syntax for a little inner-beveled, shaded box)
+                  (r/well {} (str (get-in @app-state [:values (get-in @app-state [:current-target])])))
                   ]
+
                  [:button {:href    "#"
 
                            :onClick #(concatToRegister app-state target-register 1)}
@@ -186,9 +168,6 @@
                            :onClick #(op-button-handler "divide")}
                   "/"] " "
                  [:div
-
-
-
                   [:button {:href    "#"
                             :onClick #(concatToRegister app-state target-register 4)}
                    "4"] " "
@@ -206,12 +185,8 @@
 
                                        (concatToRegister app-state target-register '.)
                                        )}
-
                    "."] " "]
-
                  [:div
-
-
                   [:button {:href    "#"
                             :onClick #(concatToRegister app-state target-register 7)}
                    "7"] " "
@@ -229,14 +204,9 @@
                             :onClick #(do (reval! 'equals)
                                           (swap! app-state assoc-in [:values :x] "")
                                           (swap! app-state assoc-in [:values :op] ""))
-
                             }
                    "="] " "
-
                   ]
-
-
-
                  (table {:striped? true :bordered? true :condensed? false :hover? true}
                         ; birds-eye view of the app-state
                         (d/thead
@@ -277,45 +247,14 @@
                                 (d/th {:width 30} "I/O Monad: ")
                                 (d/th {:width 100} "Current: ")))
                         (d/tbody
-                        (d/tr
-                          (d/td (d/code {} "State Register:"))
-                          (d/td (str (get-in @keyboard-input [:key-id]))))
-                        (d/tr
-                          (d/td (d/code {} "Shift key:"))
-                          (d/td (d/code {} (str (true? (get-in @app-state [:shift-in]))))))))
+                          (d/tr
+                            (d/td (d/code {} "State Register:"))
+                            (d/td (str (get-in @keyboard-input [:key-id]))))
+                          (d/tr
+                            (d/td (d/code {} "Shift key:"))
+                            (d/td (d/code {} (str (true? (get-in @app-state [:shift-in]))))))))
+                ]))))
 
-
-
-
-
-
-
-
-
-
-
-                 ]
-
-                )
-      )
-
-    )
-  )
-
-
-;(.addEventListener js/window "keyup"
- ;                  (fn [e]
-  ;                   (let [character (js/String.fromCharCode (.-keyCode e))
-   ;                        stringnums (set ["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"])
-    ;                       stringops (set ["+" "-" "/" "*"])]
-     ;                  (do
-      ;                   (reset! keyboard-input {:key-id character})
-       ;                  (cond (and (contains? stringnums (str character))
-        ;                            (not (get-in @app-state [:shift-in]))) (concatToRegister app-state (get-in @app-state [:current-target])
-         ;                                                                                                      (js/parseInt character))
-
-                               ; (swap! app-state assoc-in [:shift-in] true))
-          ;                 )))))
 
 (def stringnums (set ["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"]))
  ; this is quite ugly, so a word of explanation is called for
@@ -349,7 +288,6 @@
                                     (not shifted?)) (concatToRegister app-state (get-in @app-state [:current-target])
                                                                                              character)
                                (= ascii-code 16) (swap! app-state assoc-in [:shift-in] true)
-                               ;(= (.-keyCode e) 43) (op-button-handler "add")
                                (true? shifted?) (do
                                                                  (cond
                                                                         (= (get-in @keyboard-input [:key-id]) "»") (op-button-handler "add")
@@ -360,32 +298,15 @@
                                (= (get-in @keyboard-input [:key-id]) "»") (reval! 'equals)
                                (= (get-in @keyboard-input [:key-id]) "½") (op-button-handler "subtract")
                                (= ascii-code 191) (op-button-handler "divide")
-                               ;:else (concatToRegister app-state (get-in @app-state [:current-target]) (.charCodeAt (str character))))
-                               )
-
-                         ;(swap! keyboard-input [:key-id] "")
-                         )
-
-
-
-                               ;(contains? stringops (str character))  (op-button-handler "add")
-                               ; (swap! app-state assoc-in [:shift-in] true))
-                               )))
-
-
+                               )))))
 (defn render! []
   (.render js/React
            (a-simple-stateful-object app-state keyboard-input)
            (.getElementById js/document "app")))
 
 
-;(add-watch x :on-change (fn [_ _ _ _] (render!)))
-;(add-watch y :on-change (fn [_ _ _ _] (render!)))
-;(add-watch op :on-change (fn [_ _ _ _] (render!)))
-
 (add-watch app-state :on-change (fn [_ _ _ _] (render!)))
 (add-watch keyboard-input :on-change (fn [_ _ _ _] (render!)))
-;(add-watch result :on-change (fn [_ _ _ _] (render!)))
 
 (render!)
 
